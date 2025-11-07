@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "MangJoseGame.sln"
+    "dotnet.defaultSolution": "Aswang-Hunt-Last-Stand.sln"
 }

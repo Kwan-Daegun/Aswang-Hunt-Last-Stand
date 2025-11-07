@@ -1,12 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
+using UnityEditor.Search;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class HP : MonoBehaviour
 {
-    public string type; 
+    public string type;
+    public GameObject HPGO;
     public GameObject BarGO;
     public Image BarMask;
     public float currentBarValue;
@@ -17,7 +19,7 @@ public class HP : MonoBehaviour
         BarGO.SetActive(true);
     }
 
-    public void addHealth(float number)
+    public void AddHealth(float number)
     {
         if (number <= 0) return;
         currentBarValue = Mathf.Clamp(currentBarValue + number, 0, maxBarValue);
@@ -29,7 +31,7 @@ public class HP : MonoBehaviour
         BarMask.fillAmount = fill;
     }
 
-    public void subHealth(float number)
+    public void SubHealth(float number)
     {
         if (number <= 0) return;
         currentBarValue = Mathf.Clamp(currentBarValue - number, 0, maxBarValue);
@@ -42,13 +44,32 @@ public class HP : MonoBehaviour
     }
 
     private void Update()
-    {     
+    {
         if (currentBarValue <= 0)
         {
+            if (type == "Enemy")
+            {
+                Main.MinusEnemyCounter();
+                print(Main.lvl + " lvl");
+                print(Main.enemyCounter + "EC");
+
+                //  Link to EnemyAI for item drop
+                EnemyAI enemyAI = GetComponent<EnemyAI>();
+                if (enemyAI != null)
+                {
+                    enemyAI.Die();
+                    return; // ensure Die() handles destroy
+                }
+            }
+
             Destroy(gameObject);
             BarGO.SetActive(false);
         }
 
+        //HPGO.transform.rotation = Quaternion.Euler(0, 0, 0);
+        //BarGO.transform.position.x *= Vector(-1f);
+        //BarGO.transform.localScale = new Vector2(1,1);
+        //BarGO.transform.position = new Vector2(BarGO.transform.position.x * -1, BarGO.transform.position.y);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -57,7 +78,11 @@ public class HP : MonoBehaviour
         {
             if(collision.CompareTag("Enemy"))
             {
-                subHealth(10 /*enemyDamage*/);
+                Main.MinusEnemyCounter();
+                print(Main.lvl + " lvl");
+
+                print(Main.enemyCounter + "EC");
+                SubHealth(10 /*enemyDamage*/);
             }
         }
 
@@ -65,8 +90,8 @@ public class HP : MonoBehaviour
         {
             if(collision.CompareTag("Bullet"))
             {
-                subHealth(10 /*bulletDamage*/);
-            }
+                SubHealth(10 /*bulletDamage*/);
+            }            
         }
     }
 
@@ -76,7 +101,7 @@ public class HP : MonoBehaviour
         {
             if (collision.collider.CompareTag("Enemy"))
             {
-                subHealth(5 /*enemyDamage*/);
+                SubHealth(5 /*enemyDamage*/);
             }
         }
     }
@@ -88,9 +113,10 @@ public class HP : MonoBehaviour
             if (collision.collider.CompareTag("Enemy"))
             {
                 
-                subHealth(5 /*enemyDamage*/);
+                SubHealth(1 /*enemyDamage*/);
             }
         }
     }
+
 
 }

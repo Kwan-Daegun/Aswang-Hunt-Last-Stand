@@ -251,6 +251,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 2
   enemyDmg: 5
+  coinPrefab: {fileID: 7752164104856059213, guid: 0b7b1a77da7ddba4a854b67b92871584, type: 3}
+  ammoPrefab: {fileID: 5403641417705815807, guid: f988eebf47d59c04885a01a2887c4fea, type: 3}
+  coinDropChance: 100
+  ammoDropChance: 100
 --- !u!114 &8148493334391615569
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -264,6 +268,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   type: Enemy
+  HPGO: {fileID: 3916174570667993115}
   BarGO: {fileID: 1732148246231328636}
   BarMask: {fileID: 1530630738865390980}
   currentBarValue: 100

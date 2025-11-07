@@ -13,11 +13,12 @@ public class EnemySpawner : MonoBehaviour
     [Header("Wave Settings")]
     public float timeBetweenWaves = 5f;
     public int enemiesPerWave = 5;
-    public float enemySpawnInterval = 1f;
+    public float enemySpawnInterval = 3f;
 
     private int currentWave = 0;
     private bool spawning = false;
 
+    public GameManager gameManager;
     void Start()
     {
         StartNextWave();
@@ -28,19 +29,36 @@ public class EnemySpawner : MonoBehaviour
 
         if (!spawning && GameObject.FindGameObjectsWithTag("Enemy").Length == 0)
         {
+            if (currentWave >= 2 && GameObject.FindGameObjectsWithTag("Enemy").Length == 0)
+            {
+                gameManager.nextWave();
+                //nextWaveGO.SetActive(true);
+            }
+            else if(currentWave == 1 && GameObject.FindGameObjectsWithTag("Enemy").Length == 0)
+            {
+                //Display the continue wave or buy items canvas
+                //
+                Invoke(nameof(StartNextWave), timeBetweenWaves);
+                spawning = true;
+            }
+        }
+        /*if (!spawning && GameObject.FindGameObjectsWithTag("Enemy").Length == 0)
+        {
             //Display the continue wave or buy items canvas
+            //
             Invoke(nameof(StartNextWave), timeBetweenWaves);
             spawning = true;
-        }
+
+        }*/
     }
 
-    void OnClickNextWave()
+    public void OnClickNextWave()
     {
         Invoke(nameof(StartNextWave), timeBetweenWaves);
         spawning = true;
     }
 
-    void StartNextWave()
+    public void StartNextWave()
     {
         currentWave++;
         spawning = false;
