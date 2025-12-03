@@ -15,7 +15,7 @@ public class CameraBoundaryDetector : MonoBehaviour
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject == player)
+        if (collision.gameObject == player) 
         {
             virtualCamera1.gameObject.SetActive(false);
         }

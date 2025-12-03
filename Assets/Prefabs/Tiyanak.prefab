@@ -191,7 +191,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!61 &7948625189925568605
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -272,6 +272,7 @@ MonoBehaviour:
   BarGO: {fileID: 1732148246231328636}
   BarMask: {fileID: 1530630738865390980}
   currentBarValue: 100
+  bulletDamage: 25
 --- !u!1 &2844961019604532743
 GameObject:
   m_ObjectHideFlags: 0

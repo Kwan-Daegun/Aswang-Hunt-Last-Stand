@@ -90,6 +90,7 @@ GameObject:
   - component: {fileID: 7948625189925568605}
   - component: {fileID: -109748267570726917}
   - component: {fileID: 8148493334391615569}
+  - component: {fileID: 913248786716624364}
   m_Layer: 0
   m_Name: Tikbalang
   m_TagString: Enemy
@@ -191,7 +192,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!61 &7948625189925568605
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -272,6 +273,27 @@ MonoBehaviour:
   BarGO: {fileID: 1732148246231328636}
   BarMask: {fileID: 1530630738865390980}
   currentBarValue: 100
+  bulletDamage: 15
+--- !u!114 &913248786716624364
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2607998299721671849}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 143791f9459595d48948413b307355e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speed: 2
+  enemyDmg: 0
+  coinPrefab: {fileID: 0}
+  ammoPrefab: {fileID: 0}
+  coinDropChance: 100
+  ammoDropChance: 100
+  jumpForce: 7
+  cycleDuration: 2
 --- !u!1 &2844961019604532743
 GameObject:
   m_ObjectHideFlags: 0

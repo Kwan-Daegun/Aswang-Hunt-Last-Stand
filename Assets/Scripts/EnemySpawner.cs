@@ -3,108 +3,83 @@ using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
-    [Header("Spawner Settings")]
-    public Transform leftSpawn;         
-    public Transform rightSpawn;        
-    public GameObject[] wave1Enemies;
-    public GameObject[] wave2Enemies;
-    public GameObject[] wave3Enemies;
+    [Header("Configuration")]
+    // Since this script is on a specific object (Left OR Right), 
+    // we don't need a reference to the "other" side. 
+    // Just spawn at THIS object's position.
+    [SerializeField] private Transform spawnPoint;
 
-    [Header("Wave Settings")]
-    public float timeBetweenWaves = 5f;
-    public int enemiesPerWave = 5;
-    public float enemySpawnInterval = 3f;
+    [Header("My Wave Lists")]
+    // PUT ONLY THE ENEMIES FOR THIS SPECIFIC SIDE HERE
+    [SerializeField] private GameObject[] wave1Enemies;
+    [SerializeField] private GameObject[] wave2Enemies;
+    [SerializeField] private GameObject[] wave3Enemies;
+    [SerializeField] private GameObject[] wave4Enemies;
+    [SerializeField] private GameObject[] wave5Enemies;
 
-    private int currentWave = 0;
-    private bool spawning = false;
+    [Header("Timing")]
+    [Tooltip("Set to 0 to spawn all instantly. Set to 0.2 for fast sequence.")]
+    [SerializeField] private float enemySpawnInterval = 0.5f;
 
-    public GameManager gameManager;
-    void Start()
+    // Internal State
+    public bool isSpawning = false;
+
+    // We don't need Update() anymore. 
+    // The GameManager will check if enemies are dead.
+
+    public void StartWave(int waveIndex)
     {
-        StartNextWave();
+        if (isSpawning) return;
+        StartCoroutine(SpawnRoutine(waveIndex));
     }
 
-    void Update()
+    IEnumerator SpawnRoutine(int waveIndex)
     {
+        isSpawning = true;
 
-        if (!spawning && GameObject.FindGameObjectsWithTag("Enemy").Length == 0)
+        GameObject[] enemiesToSpawn = GetEnemyList(waveIndex);
+
+        // If this side has no enemies for this wave, just finish immediately
+        if (enemiesToSpawn.Length == 0)
         {
-            if (currentWave >= 2 && GameObject.FindGameObjectsWithTag("Enemy").Length == 0)
+            isSpawning = false;
+            yield break;
+        }
+
+        for (int i = 0; i < enemiesToSpawn.Length; i++)
+        {
+            GameObject prefab = enemiesToSpawn[i];
+
+            if (prefab != null)
             {
-                gameManager.nextWave();
-                //nextWaveGO.SetActive(true);
+                // Spawn at the Transform assigned in Inspector (Left or Right)
+                GameObject newEnemy = Instantiate(prefab, spawnPoint.position, Quaternion.identity);
+
+                // Reset AI Target
+                EnemyAI ai = newEnemy.GetComponent<EnemyAI>();
+                if (ai != null) ai.SetTarget(Vector2.zero);
             }
-            else if(currentWave == 1 && GameObject.FindGameObjectsWithTag("Enemy").Length == 0)
+
+            // Simultaneous Logic:
+            if (enemySpawnInterval > 0)
             {
-                //Display the continue wave or buy items canvas
-                //
-                Invoke(nameof(StartNextWave), timeBetweenWaves);
-                spawning = true;
+                yield return new WaitForSeconds(enemySpawnInterval);
             }
         }
-        /*if (!spawning && GameObject.FindGameObjectsWithTag("Enemy").Length == 0)
+
+        isSpawning = false;
+    }
+
+    GameObject[] GetEnemyList(int wave)
+    {
+        switch (wave)
         {
-            //Display the continue wave or buy items canvas
-            //
-            Invoke(nameof(StartNextWave), timeBetweenWaves);
-            spawning = true;
-
-        }*/
-    }
-
-    public void OnClickNextWave()
-    {
-        Invoke(nameof(StartNextWave), timeBetweenWaves);
-        spawning = true;
-    }
-
-    public void StartNextWave()
-    {
-        currentWave++;
-        spawning = false;
-
-        Debug.Log("Wave " + currentWave);
-
-        StartCoroutine(SpawnEnemy());
-    }
-
-    IEnumerator SpawnEnemy()
-    {
-
-        if (currentWave >= 2)
-        {
-            enemiesPerWave += 2;
+            case 1: return wave1Enemies;
+            case 2: return wave2Enemies;
+            case 3: return wave3Enemies;
+            case 4: return wave4Enemies;
+            case 5: return wave5Enemies;
+            default: return new GameObject[0];
         }
-        GameObject[] enemyPool = GetEnemyPool(currentWave);
-        int bossCount = 0;
-        for (int i = 0; i < enemiesPerWave + (currentWave - 1) * 2; i++)
-        {
-            yield return new WaitForSeconds(enemySpawnInterval);
-            GameObject enemyPrefab = enemyPool[0];
-            Transform spawnPoint = Random.value < 0.5f ? leftSpawn : rightSpawn;
-            enemyPrefab = enemyPool[Random.Range(0, enemyPool.Length)];
-            if (enemyPrefab.name == "Tikbalang" && bossCount < (currentWave - 1))
-            {
-                bossCount++;
-            }
-            else
-            {
-                enemyPrefab = enemyPool[0];
-            }
-            GameObject enemy = Instantiate(enemyPrefab, spawnPoint.position, Quaternion.identity);
-            EnemyAI enemyAI = enemy.GetComponent<EnemyAI>();
-            if (enemyAI != null)
-                enemyAI.SetTarget(Vector2.zero);
-
-            enemyPrefab = enemyPool[0];
-        }
-    }
-
-    GameObject[] GetEnemyPool(int wave)
-    {
-        if (wave == 1) return wave1Enemies;
-        if (wave == 2) return wave2Enemies;
-        if (wave == 3) return wave3Enemies;
-        return wave3Enemies;
     }
 }

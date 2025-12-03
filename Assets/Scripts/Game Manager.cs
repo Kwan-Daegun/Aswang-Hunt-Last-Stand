@@ -1,112 +1,161 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Collections;
 
 public class GameManager : MonoBehaviour
 {
-    public GameObject storeGO;
-    public GameObject nextWaveGO;
-    public GameObject winningGO;
-    public EnemySpawner2 leftSpawner;
-    public EnemySpawner2 rightSpawner;
-    public HP playerHP;
-    public HP houseHP;
-    bool waveDone = false;
-    bool gameDone = false;
-    // Start is called before the first frame update
-    void Start()
+    [Header("UI Panels")]
+    [SerializeField] private GameObject storePanel;
+    [SerializeField] private GameObject nextWavePanel;
+    [SerializeField] private GameObject winPanel;
+    [SerializeField] private GameObject gameOverPanel;
+
+    [Header("References")]
+    [SerializeField] private EnemySpawner leftSpawner;
+    [SerializeField] private EnemySpawner rightSpawner;
+
+    [SerializeField] private HP playerHP;
+    [SerializeField] private HP houseHP;
+    [SerializeField] private PlayerCoins playerCoinsScript;
+
+    [Header("Game State")]
+    private int currentWave = 0;
+    private bool isWaveInProgress = false;
+    private bool isGameOver = false;
+
+    private void Start()
     {
-        storeGO.SetActive(false);
-        nextWaveGO.SetActive(false);
-        winningGO.SetActive(false);
-        //Time.timeScale = 1f;
+        InitializeUI();
+        Time.timeScale = 1f;
+
+        // Restore Data
+        if (GlobalData.PlayerHealth > 0)
+        {
+            playerHP.currentBarValue = GlobalData.PlayerHealth;
+            houseHP.currentBarValue = GlobalData.HouseHealth;
+        }
+
+        // START THE GAME LOOP
+        StartNextWave();
     }
 
-    // Update is called once per frame
-    public void LateUpdate()
+    private void Update()
     {
-        if (leftSpawner.spawning == false && rightSpawner.spawning == false)
+        CheckGameOver();
+        CheckWaveStatus();
+    }
+
+    private void CheckWaveStatus()
+    {
+        // 1. If wave isn't running, do nothing
+        if (!isWaveInProgress) return;
+
+        // 2. Wait until spawners are finished spawning
+        if (leftSpawner.isSpawning || rightSpawner.isSpawning) return;
+
+        // 3. Check if all enemies are dead
+        if (GameObject.FindGameObjectsWithTag("Enemy").Length == 0)
         {
-            if (Main.enemyCounter == 0)
-            {
-                nextWaveGO.SetActive(true);
-            }            
+            OnWaveCleared();
+        }
+    }
+
+    private void OnWaveCleared()
+    {
+        isWaveInProgress = false;
+        Debug.Log($"Wave {currentWave} Cleared!");
+
+        if (currentWave < 5)
+        {
+            Debug.Log("Waiting 5 seconds for next wave...");
+            Invoke(nameof(StartNextWave), 5f); // 5 Second Cooldown
         }
         else
         {
-            nextWaveGO.SetActive(false);
+            OnNightComplete();
         }
+    }
 
+    public void StartNextWave()
+    {
+        // Close UI if open
+        nextWavePanel?.SetActive(false);
+        storePanel?.SetActive(false);
 
-        if (leftSpawner.currentlvl > 3)
+        // Increase Wave
+        currentWave++;
+        Main.lvl = currentWave; // Sync with your Main static var
+
+        isWaveInProgress = true;
+
+        Debug.Log($"Starting Wave {currentWave}");
+
+        // Tell both spawners to go!
+        if (leftSpawner != null) leftSpawner.StartWave(currentWave);
+        if (rightSpawner != null) rightSpawner.StartWave(currentWave);
+    }
+
+    // --- NIGHT COMPLETE LOGIC ---
+    public void OnNightComplete()
+    {
+        StartCoroutine(ShowNightEndSequence());
+    }
+
+    IEnumerator ShowNightEndSequence()
+    {
+        yield return new WaitForSeconds(2f); // Small delay after last kill
+        nextWavePanel?.SetActive(true);
+        Time.timeScale = 0f;
+    }
+
+    // --- STANDARD UI FUNCTIONS ---
+    private void InitializeUI()
+    {
+        storePanel?.SetActive(false);
+        nextWavePanel?.SetActive(false);
+        winPanel?.SetActive(false);
+        gameOverPanel?.SetActive(false);
+    }
+
+    private void CheckGameOver()
+    {
+        if (isGameOver) return;
+        if (playerHP.currentBarValue <= 0 || houseHP.currentBarValue <= 0)
         {
-            winningGO.SetActive(true);
+            isGameOver = true;
+            Time.timeScale = 0f;
+            gameOverPanel?.SetActive(true);
         }
-        else
-        {
-            winningGO.SetActive(false);
-        }
-                
     }
 
-    void checkifNextWave()
+    public void GoToStoreScene()
     {
-        nextWaveGO.SetActive(true);               
+        SaveCurrentStats();
+        Time.timeScale = 1f;
+        SceneManager.LoadScene("Store");
     }
 
-    void checkIfWin()
+    public void StartNextNight()
     {
-        winningGO.SetActive(true);
-        gameDone = false;
+        nextWavePanel?.SetActive(false);
+        Time.timeScale = 1f;
+        GlobalData.CurrentNight++;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
-    public void nextWave()
+    private void SaveCurrentStats()
     {
-        nextWaveGO.SetActive(false);
-        Main.lvl++;
-        print(Main.lvl);
+        GlobalData.PlayerHealth = playerHP.currentBarValue;
+        GlobalData.HouseHealth = houseHP.currentBarValue;
+        if (playerCoinsScript != null) GlobalData.Coins = playerCoinsScript.coins;
     }
 
-    public void Done()
-    {
-        storeGO.SetActive(false);
-        Main.lvl++;
-        print(Main.lvl);
-    }
-
-    public void Store()
-    {
-        storeGO.SetActive(true);
-        nextWaveGO.SetActive(false);
-    }
-
-
-    public void Heal()
-    {
-        playerHP.AddHealth(10);
-    }
-
-    public void Repair()
-    {
-        houseHP.AddHealth(10);
-    }
-
-    public void OnClickPlay()
-    {
-        SceneManager.LoadScene("LevelOne");
-        winningGO.SetActive(false);
-        Main.lvl = 0;
-
-    }
-
-    public void OnClickHome()
-    {
-        SceneManager.LoadScene("MainMenu");
-    }
-
-    public void OnClickExit()
-    {
-        Application.Quit();
-    }
+    public void FinishStore() => StartNextWave();
+    public void OpenStore() { storePanel?.SetActive(true); nextWavePanel?.SetActive(false); }
+    public void HealPlayer() => playerHP.AddHealth(10);
+    public void RepairHouse() => houseHP.AddHealth(10);
+    public void Home() { Time.timeScale = 1f; SceneManager.LoadScene("newMenu"); }
+    public void ExitGame() { Application.Quit(); }
+    public void RestartLevel() { Time.timeScale = 1f; SceneManager.LoadScene(SceneManager.GetActiveScene().name); }
+    public void Play() { GlobalData.ResetData(); Main.lvl = 0; Time.timeScale = 1f; SceneManager.LoadScene("LevelOne"); }
 }

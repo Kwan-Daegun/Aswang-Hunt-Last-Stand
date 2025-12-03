@@ -7,11 +7,12 @@ using UnityEngine.UI;
 
 public class HP : MonoBehaviour
 {
-    public string type;
-    public GameObject HPGO;
-    public GameObject BarGO;
-    public Image BarMask;
-    public float currentBarValue;
+    [SerializeField] private string type;
+    [SerializeField] private GameObject HPGO;
+    [SerializeField] private GameObject BarGO;
+    [SerializeField] private Image BarMask;
+    [SerializeField] public float currentBarValue;
+    [SerializeField] private int bulletDamage = 0;
     float maxBarValue = 100;
 
     void Start()
@@ -72,6 +73,7 @@ public class HP : MonoBehaviour
         //BarGO.transform.position = new Vector2(BarGO.transform.position.x * -1, BarGO.transform.position.y);
     }
 
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if(type == "House")
@@ -90,7 +92,7 @@ public class HP : MonoBehaviour
         {
             if(collision.CompareTag("Bullet"))
             {
-                SubHealth(10 /*bulletDamage*/);
+                SubHealth(bulletDamage /*bulletDamage*/);
             }            
         }
     }
